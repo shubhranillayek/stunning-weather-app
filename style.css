@@ -1,0 +1,122 @@
+/* Scrollbar Hide Utility */
+.hide-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* Glassmorphism Panels */
+.glass-panel {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+}
+
+.glass-btn {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* Scrollbars for dropdowns */
+#suggestions-list::-webkit-scrollbar,
+#compare-list-1::-webkit-scrollbar,
+#compare-list-2::-webkit-scrollbar {
+    width: 6px;
+}
+#suggestions-list::-webkit-scrollbar-thumb,
+#compare-list-1::-webkit-scrollbar-thumb,
+#compare-list-2::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+/* Dynamic Themes */
+.theme-sunny {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+}
+.theme-cloudy {
+    background: linear-gradient(135deg, #4b6cb7 0%, #182848 100%);
+}
+.theme-rainy {
+    background: linear-gradient(135deg, #2b5876 0%, #4e4376 100%);
+}
+.theme-stormy {
+    background: linear-gradient(135deg, #141e30 0%, #243b55 100%);
+}
+.theme-snowy {
+    background: linear-gradient(135deg, #757f9a 0%, #d7dde8 100%);
+}
+.theme-default {
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+}
+
+/* Light Mode Overrides */
+body.theme-light {
+    color: #1e293b;
+}
+body.theme-light #weather-bg {
+    opacity: 0.3;
+    background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%) !important;
+}
+body.theme-light .glass-panel {
+    background: rgba(255, 255, 255, 0.65);
+    border-color: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+    color: #0f172a;
+}
+body.theme-light .glass-btn {
+    background: rgba(255, 255, 255, 0.8);
+    border-color: rgba(203, 213, 225, 0.8);
+    color: #1e293b;
+}
+body.theme-light .text-gray-300,
+body.theme-light .text-gray-400 {
+    color: #475569;
+}
+body.theme-light #city-search {
+    background: rgba(255, 255, 255, 0.9);
+    color: #0f172a;
+    border-color: #cbd5e1;
+}
+body.theme-light #city-search::placeholder {
+    color: #64748b;
+}
+
+/* Hover Cards */
+.forecast-card, .hourly-card {
+    transition: all 0.3s ease;
+    min-width: 100px;
+}
+.forecast-card:hover, .hourly-card:hover {
+    transform: translateY(-4px);
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Air Quality Badges */
+.aqi-good {
+    background-color: rgba(16, 185, 129, 0.25);
+    color: #10b981;
+}
+.aqi-moderate {
+    background-color: rgba(245, 158, 11, 0.25);
+    color: #f59e0b;
+}
+.aqi-unhealthy-sensitive {
+    background-color: rgba(249, 115, 22, 0.25);
+    color: #f97316;
+}
+.aqi-unhealthy {
+    background-color: rgba(239, 68, 68, 0.25);
+    color: #ef4444;
+}
+.aqi-hazardous {
+    background-color: rgba(168, 85, 247, 0.25);
+    color: #a855f7;
+}

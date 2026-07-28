@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stunning Weather App</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-900 text-white font-inter min-h-screen flex flex-col transition-colors duration-500 ease-in-out" id="app-body">
+    
+    <div id="weather-bg" class="fixed inset-0 z-[-1] transition-all duration-1000 bg-gradient-to-br from-blue-900 to-gray-900 opacity-80"></div>
+
+    <div class="container mx-auto px-4 py-8 max-w-5xl flex-grow flex flex-col gap-6">
+        
+        <!-- Header -->
+        <header class="glass-panel p-5 rounded-2xl flex flex-col md:flex-row gap-4 items-center justify-between relative z-50">
+            <h1 class="text-2xl font-bold flex items-center gap-2">
+                <i class="fa-solid fa-cloud-sun text-yellow-400"></i> WeatherNow
+            </h1>
+            
+            <!-- Search bar -->
+            <div class="flex-grow w-full md:w-auto relative max-w-md">
+                <div class="relative">
+                    <input type="text" id="city-search" placeholder="Search for a city..." autocomplete="off"
+                           class="w-full bg-white/10 border border-white/20 rounded-full py-3 px-5 pl-12 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all">
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-300"></i>
+                </div>
+                
+                <div id="search-suggestions" class="absolute w-full mt-2 bg-gray-800/90 backdrop-blur-md rounded-xl border border-gray-700 shadow-xl hidden z-50 overflow-hidden">
+                    <ul id="suggestions-list" class="max-h-60 overflow-y-auto"></ul>
+                </div>
+            </div>
+            
+            <!-- Controls & Action buttons -->
+            <div class="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
+                <button id="btn-unit" class="glass-btn px-4 py-2.5 rounded-full font-semibold hover:bg-white/20 transition-all text-sm flex items-center gap-1.5" title="Toggle °C / °F">
+                    <i class="fa-solid fa-temperature-half text-blue-400"></i> <span id="unit-label">°C</span>
+                </button>
+                <button id="btn-theme" class="glass-btn px-3.5 py-2.5 rounded-full hover:bg-white/20 transition-all text-sm" title="Toggle Theme">
+                    <i class="fa-solid fa-moon text-yellow-300" id="theme-icon"></i>
+                </button>
+                <button id="btn-compare" class="glass-btn px-4 py-2.5 rounded-full font-semibold hover:bg-white/20 transition-all text-sm flex items-center gap-1.5" title="Compare Cities">
+                    <i class="fa-solid fa-code-compare text-purple-400"></i> Compare
+                </button>
+                <button id="btn-location" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 px-5 rounded-full shadow-lg hover:shadow-xl transition-all text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-location-arrow"></i> Location
+                </button>
+            </div>
+        </header>
+
+        <!-- Weather Alerts Banner -->
+        <div id="weather-alert" class="hidden glass-panel border-l-4 border-amber-500 p-4 rounded-2xl flex items-start justify-between gap-3 text-amber-200 bg-amber-500/10">
+            <div class="flex items-start gap-3">
+                <i class="fa-solid fa-triangle-exclamation text-amber-400 text-xl mt-0.5"></i>
+                <div>
+                    <h4 class="font-bold text-sm" id="alert-title">Weather Advisory</h4>
+                    <p class="text-xs opacity-90 mt-0.5" id="alert-desc">High chance of precipitation expected today.</p>
+                </div>
+            </div>
+            <button id="btn-close-alert" class="text-amber-300 hover:text-white p-1">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <!-- Main Dashboard -->
+        <main id="weather-dashboard" class="flex-grow flex flex-col gap-6 hidden">
+            
+            <!-- Current Weather & Details Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Primary Weather Card -->
+                <div class="glass-panel p-8 rounded-3xl lg:col-span-2 flex flex-col justify-between relative overflow-hidden min-h-[260px]">
+                    <div class="flex justify-between items-start z-10 w-full mb-4">
+                        <div>
+                            <h2 id="current-city" class="text-4xl font-bold mb-1">New York, US</h2>
+                            <p id="current-date" class="text-gray-300 text-sm">Monday, Oct 23, 2023</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button id="btn-share" class="glass-btn p-3 rounded-full text-gray-300 hover:text-white transition-colors" title="Share Weather">
+                                <i class="fa-solid fa-share-nodes text-lg"></i>
+                            </button>
+                            <button id="btn-favorite" class="glass-btn p-3 rounded-full text-gray-400 hover:text-red-500 transition-colors" title="Save Favorite City">
+                                <i class="fa-regular fa-heart text-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-6 z-10">
+                        <div class="flex items-center gap-4">
+                            <span id="current-temp" class="text-6xl font-bold">22°C</span>
+                            <div class="flex flex-col">
+                                <span id="current-desc" class="text-xl capitalize font-semibold">Partly Cloudy</span>
+                                <span class="text-gray-300 text-sm">Feels like <span id="current-feels-like">23°C</span></span>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <i id="current-icon" class="fa-solid fa-cloud-sun text-8xl text-yellow-400 drop-shadow-lg"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Secondary Metrics Cards Grid -->
+                <div class="grid grid-cols-2 gap-4 lg:col-span-1">
+                    <!-- Humidity -->
+                    <div class="glass-panel p-4 rounded-2xl flex flex-col items-center justify-center text-center">
+                        <i class="fa-solid fa-droplet text-blue-400 text-2xl mb-1"></i>
+                        <span class="text-xs text-gray-300">Humidity</span>
+                        <span id="current-humidity" class="text-base font-bold mt-1">45%</span>
+                    </div>
+
+                    <!-- Wind & Compass -->
+                    <div class="glass-panel p-4 rounded-2xl flex flex-col items-center justify-center text-center relative">
+                        <div class="flex items-center gap-1.5 mb-1">
+                            <i id="wind-compass-icon" class="fa-solid fa-location-arrow text-blue-400 text-xl transition-transform duration-500"></i>
+                        </div>
+                        <span class="text-xs text-gray-300">Wind</span>
+                        <span id="current-wind" class="text-base font-bold mt-1">12 km/h</span>
+                        <span id="wind-direction-text" class="text-[11px] text-gray-400 mt-0.5">SSE</span>
+                    </div>
+
+                    <!-- UV Index -->
+                    <div class="glass-panel p-4 rounded-2xl flex flex-col items-center justify-center text-center">
+                        <i class="fa-solid fa-sun text-amber-400 text-2xl mb-1"></i>
+                        <span class="text-xs text-gray-300">UV Index</span>
+                        <span id="current-uv" class="text-base font-bold mt-1">5.2</span>
+                    </div>
+
+                    <!-- Air Quality Index (AQI) -->
+                    <div class="glass-panel p-4 rounded-2xl flex flex-col items-center justify-center text-center">
+                        <i class="fa-solid fa-wind text-emerald-400 text-2xl mb-1"></i>
+                        <span class="text-xs text-gray-300">Air Quality</span>
+                        <span id="current-aqi" class="text-base font-bold mt-1">35</span>
+                        <span id="aqi-badge" class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/30 text-emerald-300 mt-1 font-semibold">Good</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sunrise & Sunset Tracker Card -->
+            <div class="glass-panel p-6 rounded-3xl">
+                <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-sun-plant-wilt text-amber-400"></i> Sun & Daylight Schedule
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                    <div class="flex items-center gap-3">
+                        <div class="p-3 bg-amber-400/10 rounded-2xl text-amber-400 text-2xl">
+                            <i class="fa-solid fa-sun"></i>
+                        </div>
+                        <div>
+                            <span class="text-xs text-gray-400 block">Sunrise</span>
+                            <span id="sunrise-time" class="text-lg font-bold">06:15 AM</span>
+                        </div>
+                    </div>
+
+                    <!-- Daylight Bar -->
+                    <div class="w-full">
+                        <div class="flex justify-between text-xs text-gray-400 mb-1">
+                            <span>Dawn</span>
+                            <span id="daylight-progress-text">60% Daylight</span>
+                            <span>Dusk</span>
+                        </div>
+                        <div class="w-full bg-white/10 h-3 rounded-full overflow-hidden p-0.5 border border-white/10">
+                            <div id="daylight-progress-bar" class="bg-gradient-to-r from-amber-400 via-orange-400 to-indigo-500 h-full rounded-full transition-all duration-1000" style="width: 50%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3 md:justify-end">
+                        <div class="p-3 bg-indigo-400/10 rounded-2xl text-indigo-400 text-2xl">
+                            <i class="fa-solid fa-moon"></i>
+                        </div>
+                        <div>
+                            <span class="text-xs text-gray-400 block">Sunset</span>
+                            <span id="sunset-time" class="text-lg font-bold">06:45 PM</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 24-Hour Hourly Forecast Slider -->
+            <div class="glass-panel p-6 rounded-3xl">
+                <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-clock text-blue-400"></i> Hourly Forecast (24 Hours)
+                </h3>
+                <div class="flex overflow-x-auto gap-4 pb-3 snap-x hide-scrollbar" id="hourly-forecast-container">
+                    <!-- Hourly items injected dynamically -->
+                </div>
+            </div>
+
+            <!-- 7-Day Forecast Slider -->
+            <div class="glass-panel p-6 rounded-3xl">
+                <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-calendar-days text-purple-400"></i> 7-Day Forecast
+                </h3>
+                <div class="flex overflow-x-auto gap-4 pb-3 snap-x hide-scrollbar" id="forecast-container">
+                    <!-- Daily forecast items injected dynamically -->
+                </div>
+            </div>
+
+            <!-- Historical Data & Forecast Chart -->
+            <div class="glass-panel p-6 rounded-3xl">
+                <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-line text-emerald-400"></i> Temperature Trends (Past 7 Days & Forecast)
+                </h3>
+                <div class="relative h-64 w-full">
+                    <canvas id="weatherChart"></canvas>
+                </div>
+            </div>
+            
+        </main>
+        
+        <!-- Loading State -->
+        <div id="loading-state" class="flex-grow flex flex-col items-center justify-center hidden my-16">
+            <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500 mb-4"></div>
+            <p class="text-lg">Fetching weather and air quality data...</p>
+        </div>
+
+        <!-- Initial/Empty State -->
+        <div id="empty-state" class="flex-grow flex flex-col items-center justify-center text-center my-8">
+            <i class="fa-solid fa-earth-americas text-6xl text-gray-500 mb-6 opacity-50"></i>
+            <h2 class="text-2xl font-bold mb-2">Discover the Weather</h2>
+            <p class="text-gray-400 max-w-md">Search for a city or use your current location to see detailed weather insights, AQI, and hourly trends.</p>
+            
+            <div class="mt-8 w-full max-w-md text-left">
+                <h3 class="text-lg font-semibold mb-3 flex justify-between items-center">
+                    Saved Favorites
+                    <button id="clear-favorites" class="text-sm text-red-400 hover:text-red-300 hidden">Clear All</button>
+                </h3>
+                <div id="favorites-list" class="flex flex-col gap-2">
+                    <p class="text-gray-500 italic text-sm" id="no-favorites-msg">No favorite cities saved yet.</p>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    <!-- Multi-City Comparison Modal -->
+    <div id="compare-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-panel w-full max-w-3xl rounded-3xl p-6 relative max-h-[90vh] overflow-y-auto">
+            <button id="btn-close-compare" class="absolute top-5 right-5 text-gray-400 hover:text-white p-2 text-xl">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="text-2xl font-bold mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-code-compare text-purple-400"></i> Compare Cities Side-by-Side
+            </h3>
+
+            <!-- Search inputs for two cities -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <!-- City 1 Search -->
+                <div class="relative">
+                    <label class="text-xs text-gray-400 mb-1 block font-semibold">City 1</label>
+                    <input type="text" id="compare-search-1" placeholder="Search City 1..." autocomplete="off"
+                           class="w-full bg-white/10 border border-white/20 rounded-xl py-2.5 px-4 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-400">
+                    <div id="compare-suggestions-1" class="absolute w-full mt-1 bg-gray-800 rounded-xl border border-gray-700 hidden z-50 overflow-hidden">
+                        <ul id="compare-list-1" class="max-h-40 overflow-y-auto text-sm"></ul>
+                    </div>
+                </div>
+
+                <!-- City 2 Search -->
+                <div class="relative">
+                    <label class="text-xs text-gray-400 mb-1 block font-semibold">City 2</label>
+                    <input type="text" id="compare-search-2" placeholder="Search City 2..." autocomplete="off"
+                           class="w-full bg-white/10 border border-white/20 rounded-xl py-2.5 px-4 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-400">
+                    <div id="compare-suggestions-2" class="absolute w-full mt-1 bg-gray-800 rounded-xl border border-gray-700 hidden z-50 overflow-hidden">
+                        <ul id="compare-list-2" class="max-h-40 overflow-y-auto text-sm"></ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comparison Table Container -->
+            <div id="compare-content" class="hidden">
+                <div class="grid grid-cols-3 gap-2 border-b border-white/10 pb-3 font-semibold text-center text-sm">
+                    <span id="comp-city1-name" class="text-purple-300 text-base">City 1</span>
+                    <span class="text-gray-400 text-xs">Metric</span>
+                    <span id="comp-city2-name" class="text-blue-300 text-base">City 2</span>
+                </div>
+                <div class="flex flex-col divide-y divide-white/5 text-sm text-center">
+                    <div class="grid grid-cols-3 gap-2 py-3 items-center">
+                        <span id="comp-temp-1" class="font-bold text-lg">--</span>
+                        <span class="text-xs text-gray-400">Temperature</span>
+                        <span id="comp-temp-2" class="font-bold text-lg">--</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 py-3 items-center">
+                        <span id="comp-cond-1">--</span>
+                        <span class="text-xs text-gray-400">Condition</span>
+                        <span id="comp-cond-2">--</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 py-3 items-center">
+                        <span id="comp-humidity-1">--</span>
+                        <span class="text-xs text-gray-400">Humidity</span>
+                        <span id="comp-humidity-2">--</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 py-3 items-center">
+                        <span id="comp-wind-1">--</span>
+                        <span class="text-xs text-gray-400">Wind Speed</span>
+                        <span id="comp-wind-2">--</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 py-3 items-center">
+                        <span id="comp-uv-1">--</span>
+                        <span class="text-xs text-gray-400">UV Index</span>
+                        <span id="comp-uv-2">--</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 py-3 items-center">
+                        <span id="comp-aqi-1">--</span>
+                        <span class="text-xs text-gray-400">Air Quality</span>
+                        <span id="comp-aqi-2">--</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty compare state prompt -->
+            <div id="compare-empty-prompt" class="text-center py-8 text-gray-400 text-sm">
+                <i class="fa-solid fa-code-compare text-4xl mb-3 text-purple-400/50"></i>
+                <p>Search and select two cities above to see a detailed side-by-side comparison.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Toast -->
+    <div id="error-toast" class="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-3 transition-transform duration-300 translate-y-24 z-50 text-sm">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <span id="error-msg">An error occurred!</span>
+        <button id="close-error" class="ml-4 hover:text-red-200"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
