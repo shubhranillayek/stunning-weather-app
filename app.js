@@ -215,12 +215,33 @@ async function fetchSuggestions(query, targetList, targetContainer, onSelect) {
 
 async function reverseGeocode(lat, lon) {
     try {
-        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
-        const data = await res.json();
-        return data.address.city || data.address.town || data.address.village || 'Unknown Location';
+        const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`);
+        if (res.ok) {
+            const data = await res.json();
+            const cityName = data.city || data.locality || data.principalSubdivision;
+            if (cityName) {
+                const country = data.countryName ? `, ${data.countryName}` : '';
+                return `${cityName}${country}`;
+            }
+        }
     } catch (err) {
-        return 'Unknown Location';
+        console.warn("BigDataCloud reverse geocode failed, trying fallback...", err);
     }
+
+    try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+        if (res.ok) {
+            const data = await res.json();
+            const addr = data.address || {};
+            const name = addr.city || addr.town || addr.village || addr.municipality || addr.county || addr.district || addr.suburb || addr.state_district || addr.state || (data.display_name ? data.display_name.split(',')[0] : null);
+            const country = addr.country ? `, ${addr.country}` : '';
+            if (name) return `${name}${country}`;
+        }
+    } catch (err) {
+        console.warn("Nominatim fallback reverse geocode failed...", err);
+    }
+
+    return 'Current Location';
 }
 
 async function fetchWeather(lat, lon) {
