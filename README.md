@@ -26,3 +26,5 @@ Built with pure frontend web technologies (HTML5, Tailwind CSS, Vanilla JS, Char
 - **Open-Meteo Forecast & Air Quality APIs** (Free & No API key needed)
 - **Nominatim OpenStreetMap Geocoding API** (Free autocomplete & reverse geocoding)
 
+
+## 🌐 https://shubhranillayek.github.io/stunning-weather-app/
