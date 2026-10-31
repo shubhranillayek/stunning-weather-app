@@ -1,8 +1,22 @@
-# Weather App (WeatherNow)
+# WeatherNow — JavaScript Weather and Air Quality Dashboard
 
-A feature-rich, visually stunning Single Page Application (SPA) providing real-time weather updates, 24-hour hourly forecasts, 7-day weather predictions, historical temperature trends, Air Quality Index (AQI), and multi-city comparisons. 
+WeatherNow is a browser weather dashboard by [Shubhranil Layek](https://github.com/shubhranillayek). It uses public APIs to display current conditions, hourly and 7-day forecasts, air quality, temperature charts and side-by-side city comparisons.
 
-Built with pure frontend web technologies (HTML5, Tailwind CSS, Vanilla JS, Chart.js) and 100% free, no-authentication APIs (Open-Meteo & Nominatim).
+Built with HTML, vanilla JavaScript, Tailwind CSS and Chart.js. The configured Open-Meteo and Nominatim endpoints do not require an API key; their service terms and usage limits still apply.
+
+**Live demo:** [Open WeatherNow](https://shubhranillayek.github.io/stunning-weather-app/)
+
+## Run locally
+
+No application build step or backend server is required. Serve the files locally, for example with Python:
+
+```bash
+git clone https://github.com/shubhranillayek/stunning-weather-app.git
+cd stunning-weather-app
+python3 -m http.server 8000
+```
+
+Open [http://localhost:8000](http://localhost:8000). An internet connection is required for API requests and CDN-hosted libraries. Browser geolocation requires permission and a secure context, such as HTTPS or localhost.
 
 ## 🚀 Key Features
 
@@ -27,4 +41,21 @@ Built with pure frontend web technologies (HTML5, Tailwind CSS, Vanilla JS, Char
 - **Nominatim OpenStreetMap Geocoding API** (Free autocomplete & reverse geocoding)
 
 
-## 🌐 https://shubhranillayek.github.io/stunning-weather-app/
+## Frequently asked questions
+
+### What does WeatherNow show?
+
+Current weather conditions, hourly and 7-day forecasts, air-quality metrics, temperature charts and a two-city comparison view.
+
+### Do I need an API key?
+
+The endpoints configured in this app do not use an API key. Open-Meteo and Nominatim usage policies, quotas and availability still apply; this is not a promise of unlimited free access.
+
+### Does the app need a backend?
+
+No application backend is included. Browser JavaScript requests data from external APIs, and static hosting can serve the app's files.
+
+### Is location access required?
+
+No. You can search for a city instead. Using your current location requires browser permission and HTTPS or localhost.
+
