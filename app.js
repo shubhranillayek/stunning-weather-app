@@ -358,7 +358,7 @@ function updateUI(weatherData, aqiData, cityName) {
         }
     }
 
-    // Weather Alert Banner Logic
+    // Weather Alert Banner
     const maxRainChance = daily.precipitation_probability_max[todayIndex] || 0;
     if (maxRainChance >= 60 || current.weather_code >= 80) {
         weatherAlert.classList.remove('hidden');
@@ -659,7 +659,7 @@ document.addEventListener('click', (e) => {
 });
 
 // Geolocation Button
-btnLocation.addEventListener('click', () => {
+btnLocation.addEventListener('click', async () => {
     if (!navigator.geolocation) {
         showToast('Geolocation is not supported by your browser.');
         return;
@@ -668,22 +668,57 @@ btnLocation.addEventListener('click', () => {
     btnLocation.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Locating...';
     btnLocation.disabled = true;
 
-    navigator.geolocation.getCurrentPosition(
-        async (position) => {
-            const { latitude, longitude } = position.coords;
-            const cityName = await reverseGeocode(latitude, longitude);
-            await loadWeather(latitude, longitude, cityName);
-            btnLocation.innerHTML = originalText;
-            btnLocation.disabled = false;
-        },
-        (error) => {
-            btnLocation.innerHTML = originalText;
-            btnLocation.disabled = false;
-            showToast(error.code === error.PERMISSION_DENIED ? 'Location permission denied.' : 'Unable to retrieve location.');
-        },
-        { timeout: 10000 }
-    );
+    try {
+        const { latitude, longitude } = await getCurrentPosition();
+        await loadWeatherForCoords(latitude, longitude);
+    } catch (geoError) {
+        // Respect an explicit permission denial; otherwise fall back to IP-based location.
+        if (geoError && geoError.code === 1) {
+            showToast('Location permission denied. Allow location access in your browser or search for a city.');
+        } else {
+            console.warn('Browser geolocation failed, falling back to IP-based location:', geoError);
+            try {
+                const { latitude, longitude } = await getLocationFromIP();
+                await loadWeatherForCoords(latitude, longitude);
+            } catch (ipError) {
+                console.error('IP-based location failed:', ipError);
+                showToast("Couldn't determine your location. Please search for a city instead.");
+            }
+        }
+    } finally {
+        btnLocation.innerHTML = originalText;
+        btnLocation.disabled = false;
+    }
 });
+
+function getCurrentPosition() {
+    return new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(
+            (position) => resolve(position.coords),
+            (error) => {
+                const e = new Error('Geolocation failed');
+                e.code = error.code;
+                reject(e);
+            },
+            { timeout: 10000, maximumAge: 300000 }
+        );
+    });
+}
+
+async function getLocationFromIP() {
+    const res = await fetch('https://ipwho.is/');
+    if (!res.ok) throw new Error('IP geolocation request failed');
+    const data = await res.json();
+    if (!data || data.success === false || typeof data.latitude !== 'number' || typeof data.longitude !== 'number') {
+        throw new Error('IP geolocation returned no coordinates');
+    }
+    return { latitude: data.latitude, longitude: data.longitude };
+}
+
+async function loadWeatherForCoords(lat, lon) {
+    const cityName = await reverseGeocode(lat, lon);
+    await loadWeather(lat, lon, cityName);
+}
 
 // Favorite Buttons
 btnFavorite.addEventListener('click', () => {
