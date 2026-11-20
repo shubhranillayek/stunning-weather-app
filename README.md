@@ -6,6 +6,8 @@ Built with HTML, vanilla JavaScript, Tailwind CSS and Chart.js. The configured O
 
 **Live demo:** [Open WeatherNow](https://shubhranillayek.github.io/stunning-weather-app/)
 
+I wrote up how this was built here: [WeatherNow — building a JavaScript weather app](https://shubhranillayek.github.io/blog/weathernow-javascript-weather-app-github/)
+
 ## Run locally
 
 No application build step or backend server is required. Serve the files locally, for example with Python:
